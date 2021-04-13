@@ -5,6 +5,32 @@ from pyrogram import Client, filters
 
 @Client.on_message(filters.photo & filters.private)
 async def photo(client: Client, message: Message):
+    if update.from_user.id in Config.BANNED_USERS:
+        await bot.delete_messages(
+            chat_id=update.chat.id,
+            message_ids=update.message_id,
+            revoke=True
+        )
+        return
+    if Config.UPDATE_CHANNEL:
+        try:
+            user = await bot.get_chat_member(Config.UPDATE_CHANNEL, update.chat.id)
+            if user.status == "kicked":
+               await update.reply_text("🤭 Sorry Dude, You are **B A N N E D**.")
+               return
+        except UserNotParticipant:
+            #await update.reply_text(f"Join @{update_channel} To Use Me")
+            await update.reply_text(
+                text="**Join My Updates Channel to use me & Enjoy the Free Service**",
+                reply_markup=InlineKeyboardMarkup([
+                    [ InlineKeyboardButton(text="Join Our Updates Channel", url=f"https://telegram.me/{Config.UPDATE_CHANNEL}")]
+                ])
+            )
+            return 
+        except Exception as error:
+            print(error)
+            await update.reply_text("Something wrong contact support group")
+            return
     try:
         await client.send_message(
             chat_id=message.chat.id,
